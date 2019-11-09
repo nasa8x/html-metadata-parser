@@ -1,6 +1,6 @@
 {
   "name": "html-metadata-parser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Html Metadata scraper and parser for Node.js",
   "main": "index.js",
   "scripts": {

@@ -67,11 +67,11 @@ module.exports = {
         else {
 
             $('img').each(function (idx, element) {
-                var url = $(this).attr('src');
-                if (_this.isUrl(url)) {
+                var src = $(this).attr('src');
+                if (_this.isUrl(src)) {
                     var width = $(this).attr('width');
                     var height = $(this).attr('height');
-                    var img = { url: url };
+                    var img = { url: src };
                     if (width) { img.width = parseInt(width, 10); }
                     if (height) { img.height = parseInt(height, 10); }
                     images.push(img);
@@ -82,7 +82,7 @@ module.exports = {
 
         }
 
-        return images;
+        return images.length > 0 ? images : null;
     },
 
     videos: function ($) {
@@ -115,7 +115,7 @@ module.exports = {
             }
         });
 
-        return videos;
+        return videos.length > 0 ? videos : null;
     },
 
     og: function ($) {

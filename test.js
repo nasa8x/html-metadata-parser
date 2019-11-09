@@ -11,7 +11,7 @@ var Meta = require('./index');
 (async () => {
 
 
-    var result = await Meta.parser('https://www.youtube.com/watch?v=ValAnR41XaY');
+    var result = await Meta.parser('https://learnstartup.net/p/BJQWO5_Wnx');
 
     console.log(JSON.stringify(result, null, 3));
 
