@@ -17,3 +17,12 @@ var Meta = require('./index');
 
 
 })();
+
+
+var html = ` <div>
+                    < span > Some HTML here</span>
+            </div >    `
+
+var res = Meta.parseHtml(html)
+console.log(res)
+

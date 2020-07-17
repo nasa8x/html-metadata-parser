@@ -172,5 +172,26 @@ module.exports = {
         });
 
 
+    },
+
+    parseHtml: function (x) {
+
+        var _this = this;
+
+        if (typeof x === 'string') {
+            var data = x;
+            var $ = cheerio.load(data);
+
+            var result = {
+                meta: _this.meta($),
+                og: _this.og($),
+                images: _this.images($),
+            };
+
+            return result
+        } else {
+            return ""
+        }
+
     }
 }
