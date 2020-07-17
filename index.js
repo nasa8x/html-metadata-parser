@@ -174,7 +174,7 @@ module.exports = {
 
     },
 
-    parseHtml: function (x) {
+    parseHtml: function (x, callback) {
 
         var _this = this;
 
@@ -188,10 +188,10 @@ module.exports = {
                 images: _this.images($),
             };
 
-            return result
-        } else {
-            return ""
+            return new Promise((resolve, reject) => {
+                callback && callback(null, result);
+                resolve(result);
+            })
         }
-
     }
 }
