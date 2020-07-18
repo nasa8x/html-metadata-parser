@@ -1,5 +1,4 @@
-var _ = require('util'),
-    cheerio = require('cheerio'),
+var HTML = require('node-html-parser'),
     axios = require('axios');
 
 
@@ -13,23 +12,9 @@ module.exports = {
         return (s && s.trim && s.trim().replace(/\s+/g, ' ')) || '';
     },
 
-
-    readOgTag: function ($, name) {
-        return this.trim($('meta[property="og:' + name + '"]').attr('content'));
-    },
-    readMT: function ($, name) {
-        return this.trim($('meta[name="' + name + '"]').attr('content'));
-    },
-
-    meta: function ($) {
-
-        return {
-            title: this.trim($('head title').text()),
-            description: this.readMT($, 'description'),
-            keywords: this.readMT($, 'keywords'),
-            canonical: this.trim($('link[rel=canonical]').attr('href'))
-        };
-
+    readMT: function (el, name) {
+        var attr = el.getAttribute('name') || el.getAttribute('property');
+        return attr == name ? el.getAttribute('content') : null;
     },
 
     images: function ($, t) {
@@ -37,11 +22,11 @@ module.exports = {
         var images = [];
         var _this = this;
         if (t == 'og') {
-            [].forEach.call($('meta[property^="og:image"]'), function (el) {
-                var $el = $(el);
-                var propName = $el.attr('property');
-                var content = $el.attr('content');
 
+            $.querySelectorAll('meta').forEach(function (el) {
+
+                var propName = el.getAttribute('property') || el.getAttribute('name');
+                var content = el.getAttribute('content');
                 if (propName === 'og:image' || propName === 'og:image:url') {
                     images.push({ url: content });
                 }
@@ -66,32 +51,32 @@ module.exports = {
         }
         else {
 
-            $('img').each(function (idx, element) {
-                var src = $(this).attr('src');
-                if (_this.isUrl(src)) {
-                    var width = $(this).attr('width');
-                    var height = $(this).attr('height');
+            $.querySelectorAll('img').forEach(function (el) {
+
+                var src = el.getAttribute('src');
+
+                if (src && _this.isUrl(src)) {
+
+                    var width = el.getAttribute('width');
+                    var height = el.getAttribute('height');
                     var img = { url: src };
                     if (width) { img.width = parseInt(width, 10); }
                     if (height) { img.height = parseInt(height, 10); }
                     images.push(img);
-
                 }
-
             });
 
         }
 
-        return images.length > 0 ? images : null;
+        return images;
     },
 
     videos: function ($) {
         var videos = [];
 
-        [].forEach.call($('meta[property^="og:video"]'), function (el) {
-            var $el = $(el);
-            var propName = $el.attr('property');
-            var content = $el.attr('content');
+        $.querySelectorAll('meta').forEach(function (el) {
+            var propName = el.getAttribute('property') || el.getAttribute('name');
+            var content = el.getAttribute('content');
 
             if (propName === 'og:video' || propName === 'og:video:url') {
                 videos.push({ url: content });
@@ -113,24 +98,14 @@ module.exports = {
                     current.height = parseInt(content, 10);
                     break;
             }
+
         });
 
-        return videos.length > 0 ? videos : null;
+
+        return videos;
     },
 
-    og: function ($) {
 
-        return {
-            title: this.readOgTag($, 'title'),
-            description: this.readOgTag($, 'description'),
-            url: this.readOgTag($, 'url'),
-            site_name: this.readOgTag($, 'site_name'),
-            type: this.readOgTag($, 'type'),
-            images: this.images($, 'og'),
-            videos: this.videos($)
-        }
-
-    },
 
     parser: function (x, callback) {
 
@@ -139,7 +114,8 @@ module.exports = {
         var o = {
             method: 'get',
             headers: {
-                'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36',
+                //'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.129 Safari/537.36 OPR/68.0.3618.63',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             }
 
@@ -152,15 +128,52 @@ module.exports = {
         }
 
         return new Promise(function (resolve, reject) {
-            axios(o).then(function ({ data }) {
+            axios(o).then(function ({ data }) {                
 
-                var $ = cheerio.load(data);
+                var og = {}, meta = {};
+                var $ = HTML.parse(data);
 
-                var result = {
-                    meta: _this.meta($),
-                    og: _this.og($),
-                    images: _this.images($),
-                };
+                og.images = _this.images($, 'og');
+                og.videos = _this.videos($);
+                var title = $.querySelector('title');
+                if (title)
+                    meta.title = title.text;
+                var metas = $.querySelectorAll('meta');
+
+                for (let i = 0; i < metas.length; i++) {
+                    var el = metas[i];                    
+
+                    if (_this.readMT(el, 'og:title'))
+                        og.title = _this.readMT(el, 'og:title');
+
+                    if (_this.readMT(el, 'og:description'))
+                        og.description = _this.readMT(el, 'og:description');
+
+                    if (_this.readMT(el, 'og:image'))
+                        og.image = _this.readMT(el, 'og:image');
+
+                    if (_this.readMT(el, 'og:url'))
+                        og.url = _this.readMT(el, 'og:url');
+
+                    if (_this.readMT(el, 'og:site_name'))
+                        og.site_name = _this.readMT(el, 'og:site_name');
+
+                    if (_this.readMT(el, 'og:type'))
+                        og.type = _this.readMT(el, 'og:type');
+
+                    // meta
+                    if (_this.readMT(el, 'title'))
+                        meta.title = _this.readMT(el, 'title');
+
+                    if (_this.readMT(el, 'description'))
+                        meta.description = _this.readMT(el, 'description');
+
+                    if (_this.readMT(el, 'image'))
+                        meta.image = _this.readMT(el, 'image');
+
+                }
+
+                var result = { meta: meta, og: og, images: _this.images($) };
 
                 callback && callback(null, result);
                 resolve(result);

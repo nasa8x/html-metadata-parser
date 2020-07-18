@@ -11,11 +11,11 @@ Html Metadata scraper and parser for Node.js
 
 ### Install
 
-```js
+```
 npm install html-metadata-parser
 ```
 
-```js
+```
 yarn install html-metadata-parser
 ```
 
