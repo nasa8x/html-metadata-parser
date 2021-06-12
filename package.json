@@ -29,7 +29,7 @@
   },
   "homepage": "https://morioh.com/topic/node-js",
   "dependencies": {
-    "axios": "^0.19.2",
-    "node-html-parser": "^1.2.16"
+    "axios": "^0.21.1",
+    "node-html-parser": "^3.3.5"
   }
 }
