@@ -185,5 +185,26 @@ module.exports = {
         });
 
 
+    },
+
+    parseHtml: function (x, callback) {
+
+        var _this = this;
+
+        if (typeof x === 'string') {
+            var data = x;
+            var $ = cheerio.load(data);
+
+            var result = {
+                meta: _this.meta($),
+                og: _this.og($),
+                images: _this.images($),
+            };
+
+            return new Promise((resolve, reject) => {
+                callback && callback(null, result);
+                resolve(result);
+            })
+        }
     }
 }
