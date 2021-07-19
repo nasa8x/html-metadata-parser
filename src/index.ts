@@ -1,6 +1,15 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { parse as HTML, HTMLElement } from "node-html-parser";
 
+interface Meta {
+    title?: string;
+    description?: string,
+    image?: string
+    url?: string,
+    type?: string,
+    site_name?: string
+}
+
 
 const readMT = (el: HTMLElement, name: string) => {
     var prop = el.getAttribute('name') || el.getAttribute('property');
@@ -8,13 +17,22 @@ const readMT = (el: HTMLElement, name: string) => {
 };
 
 const parse = async (url: string, config?: AxiosRequestConfig) => {
-    
+
     if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return {};
 
     const { data } = await axios(url, config);
 
     const $ = HTML(data);
-    const og = {}, meta = {}, images = [];
+    const og: Meta = {}, meta: Meta = {}, images = [];
+
+    const title = $.querySelector('title');
+    if (title)
+        meta.title = title.text;
+
+    const canonical = $.querySelector('link[rel=canonical]');
+    if (canonical) {
+        meta.url = canonical.getAttribute('href');
+    }
 
 
     const metas = $.querySelectorAll('meta');
