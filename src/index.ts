@@ -18,8 +18,9 @@ const readMT = (el: HTMLElement, name: string) => {
 
 const parse = async (url: string, config?: AxiosRequestConfig) => {
 
-    if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return {};
-
+    // if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return {};
+    if (!/(^http(s?):\/\/(\w+)\.(\w+))/.test(url)) return {};
+    
     const { data } = await axios(url, config);
 
     const $ = HTML(data);
@@ -56,7 +57,7 @@ const parse = async (url: string, config?: AxiosRequestConfig) => {
 
     // images
     $.querySelectorAll('img').forEach(el => {
-        let src: string = el.getAttribute('src');
+        let src: string = el.getAttribute('src') || el.getAttribute('data-src');
         if (src) {
             src = new URL(src, url).href;
             images.push({ src });
