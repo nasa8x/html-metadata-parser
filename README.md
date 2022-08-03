@@ -27,7 +27,7 @@ parser('https://www.youtube.com/watch?v=eSzNNYk7nVU').then(result=>{
 // async 
 const { parser } = require('html-metadata-parser');
 (async () => {
-    var result = await parse('https://www.youtube.com/watch?v=eSzNNYk7nVU');
+    var result = await parser('https://www.youtube.com/watch?v=eSzNNYk7nVU');
     console.log(JSON.stringify(result, null, 3));
 })();
 
