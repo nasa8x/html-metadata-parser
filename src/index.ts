@@ -2,28 +2,40 @@ import axios, { AxiosRequestConfig } from "axios";
 import { parse as HTML, HTMLElement } from "node-html-parser";
 
 interface Meta {
-    title?: string;
-    description?: string,
+    title?: string
+    description?: string
     image?: string
-    url?: string,
-    type?: string,
+    url?: string
+    type?: string
     site_name?: string
+    locale?:string
 }
 
+interface MetaArticle {
+    published_time?: string
+    modified_time?: string
+}
+
+export class Metadata  {
+    meta: Meta
+    og: Meta
+    article?: MetaArticle
+    images?: string[]
+}
 
 const readMT = (el: HTMLElement, name: string) => {
     var prop = el.getAttribute('name') || el.getAttribute('property');
     return prop == name ? el.getAttribute('content') : null;
 };
 
-const parse = async (url: string, config?: AxiosRequestConfig) => {
+const parse = async (url: string, config?: AxiosRequestConfig): Promise<Metadata> => {
 
-    if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return {};
+    if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return null;
 
     const { data } = await axios(url, config);
 
     const $ = HTML(data);
-    const og: Meta = {}, meta: Meta = {}, images = [];
+    const og: Meta = {}, meta: Meta = {}, article: MetaArticle = {}, images = [];
 
     const title = $.querySelector('title');
     if (title)
@@ -33,7 +45,6 @@ const parse = async (url: string, config?: AxiosRequestConfig) => {
     if (canonical) {
         meta.url = canonical.getAttribute('href');
     }
-
 
     const metas = $.querySelectorAll('meta');
 
@@ -47,10 +58,17 @@ const parse = async (url: string, config?: AxiosRequestConfig) => {
             if (val) meta[s] = val;
         });
 
-        ['og:title', 'og:description', 'og:image', 'og:url', 'og:site_name', 'og:type', 'og:locate', 'article:published_time', 'article:modified_time'].forEach(s => {
+
+        ['article:published_time', 'article:modified_time'].forEach(s => {
+            const val = readMT(el, s);
+            if (val) article[s.split(':')[1]] = val;
+        });
+
+        ['og:title', 'og:description', 'og:image', 'og:url', 'og:site_name', 'og:type', 'og:locale'].forEach(s => {
             const val = readMT(el, s);
             if (val) og[s.split(':')[1]] = val;
         });
+
     }
 
 
@@ -63,7 +81,7 @@ const parse = async (url: string, config?: AxiosRequestConfig) => {
         }
     });
 
-    return { meta, og, images };
+    return { meta, og, images, article };
 
 }
 
