@@ -28,9 +28,9 @@ const readMT = (el: HTMLElement, name: string) => {
     return prop == name ? el.getAttribute('content') : null;
 };
 
-const parse = async (url: string, config?: AxiosRequestConfig): Promise<Metadata> => {
+const parse = async (url: string, config?: AxiosRequestConfig) => {
 
-    if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return null;
+    if (!/(^http(s?):\/\/[^\s$.?#].[^\s]*)/i.test(url)) return {};
 
     const { data } = await axios(url, config);
 
