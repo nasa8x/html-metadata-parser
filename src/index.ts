@@ -47,7 +47,7 @@ const parse = async (url: string, config?: AxiosRequestConfig) => {
             if (val) meta[s] = val;
         });
 
-        ['og:title', 'og:description', 'og:image', 'og:url', 'og:site_name', 'og:type'].forEach(s => {
+        ['og:title', 'og:description', 'og:image', 'og:url', 'og:site_name', 'og:type', 'og:locate', 'article:published_time', 'article:modified_time'].forEach(s => {
             const val = readMT(el, s);
             if (val) og[s.split(':')[1]] = val;
         });
